@@ -15,7 +15,7 @@ SHEET = GSPREAD_CLIENT.open('kayleighs-cakes-mh76')
 
 def main_user_interface():
     """
-    A list of options presented to the user. 
+    A list of options presented to the user.\
     Number input (1-6) determines the action taken.
     """
     while True:
@@ -26,7 +26,6 @@ def main_user_interface():
         print("4. View most popular products\n   (based on customer survey)")
         print("5. Add products to 'new menu short list' worksheet")
         print("6. Exit the program\n")
-    
         option = input("Enter your choice here (1-6):\n")
 
         if validate_input(option):
@@ -52,16 +51,6 @@ def validate_input(value):
     return True
 
 
-def get_existing_products():
-    """
-    Gets all info from 'current products' worksheet and 
-    assigns it to current_products variable.
-    """
-    current_products = SHEET.worksheet("current products")
-    data = current_products.get_all_values()
-    return data
-
-
 class Product:
     """
     Base class for individual products.
@@ -69,28 +58,29 @@ class Product:
     def __init__(self, name, cost_price):
         self.name = name
         self.cost_price = cost_price
-        
+
     def details(self):
         """
         Method to return product details as a string.
         """
-        return f"Product: {self.name}\nCost Price: €{round(self.cost_price, 2)}\n"
+        return f"Product: {self.name}\n"\
+            "Cost Price: €{round(self.cost_price, 2)}\n"
 
-        
+
 class GrossProfitMixin:
     """
     Mixin to calculate GP
     """
     def _calculate_gp(self, cost_price, sale_price):
         """
-        Method to return GP as an integer, 
-        rounded to 2 decimal places, 
+        Method to return GP as an integer,
+        rounded to 2 decimal places,
         if given cost_price and sale_price.
         """
         gp = round((sale_price - cost_price) / sale_price * 100, 2)
         return f"Current GP(%): {gp}\n"
 
-        
+
 class RecPriceMixin:
     """
     Mixin to calculate recommended price.
@@ -99,52 +89,83 @@ class RecPriceMixin:
         """
         Mixin to calculate recommended sale price,
         based on Irish standard food GP of 65%,
-        if given cost_price. 
+        if given cost_price.
         """
         rec_price = round(cost_price / (1 - (65 / 100)), 2)
         return f"Recommended sale price: €{rec_price}\n"
 
-        
+
 class ExistingProduct(GrossProfitMixin, RecPriceMixin, Product):
     """
-    Class for existing products, inheriting from Product 
+    Class for existing products, inheriting from Product
     superclass, RecPriceMixin and GrossProductMixin.
     """
     def __init__(self, name, cost_price, sale_price):
         self.sale_price = sale_price
         Product.__init__(self, name, cost_price)
-        
+
     def get_details(self):
         """
-        Method to return all product details as a string. 
-        Utilises details() method from Product superclass, 
+        Method to return all product details as a string.
+        Utilises details() method from Product superclass,
         as well as methods from GrossProductMixin and RecPriceMixin.
         """
-        return Product.details(self) + f"Sale Price: €{round(self.sale_price, 2)}\n" + self._calculate_gp(self.cost_price, self.sale_price) + self._calculate_rec_price(self.cost_price)
+        return Product.details(self) + \
+            f"Sale Price: €{round(self.sale_price, 2)}\n" + \
+            self._calculate_gp(self.cost_price, self.sale_price) + \
+            self._calculate_rec_price(self.cost_price)
 
 
 class NewProduct(RecPriceMixin, Product):
     """
-    Class for new products, inheriting from Product 
+    Class for new products, inheriting from Product
     class and RecPriceMixin
     """
     def __init__(self, name, cost_price):
         Product.__init__(self, name, cost_price)
-        
+
     def get_details(self):
         """
-        Method to return all product details as a string. 
-        Utilises details() method from Product superclass, 
+        Method to return all product details as a string.
+        Utilises details() method from Product superclass,
         as well as _calculate_rec_price() method from RecPriceMixin.
         """
-        return Product.details(self) + self._calculate_rec_price(self.cost_price)
-        
+        return Product.details(self) + \
+            self._calculate_rec_price(self.cost_price)
+
 
 brownie = ExistingProduct("Brownie", 1.556, 2.754)
 print(brownie.get_details())
 
 banoffie = NewProduct("Banoffie Pie", 2.67)
 print(banoffie.get_details())
+
+
+def get_existing_products():
+    """
+    Gets all info from 'current products' worksheet and
+    assigns it to current_products variable.
+    """
+    current_products = SHEET.worksheet("current products")
+    product_data = current_products.get_all_values()
+    del product_data[0]
+    return product_data
+
+
+def build_current_product_list(product_data):
+    """
+    Takes the spreadsheet data from the relevant
+    'get products' function and adds the data to the
+    product classes.
+    """
+    print(product_data[0])
+    product_list = []
+    for data in product_data:
+        product_list.append(
+            ExistingProduct(data[0], float(data[1]), float(data[2]))
+            )
+
+    return product_list
 
 
 def main():
@@ -154,6 +175,8 @@ def main():
     user_option = main_user_interface()
     existing_products = get_existing_products()
     print(existing_products)
+    current_product_list = build_current_product_list(existing_products)
+    print(current_product_list)
 
 
 print("Welcome to Kayleigh's Cakes product analysis!\n")
