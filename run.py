@@ -62,6 +62,99 @@ def get_existing_products():
     return data
 
 
-user_option = main_user_interface()
-existing_products = get_existing_products()
-print(existing_products)
+class Product:
+    """
+    Base class for individual products.
+    """
+    def __init__(self, name, cost_price):
+        self.name = name
+        self.cost_price = cost_price
+        
+    def details(self):
+        """
+        Method to return product details as a string.
+        """
+        return f"Product: {self.name}\nCost Price: €{round(self.cost_price, 2)}\n"
+
+        
+class GrossProfitMixin:
+    """
+    Mixin to calculate GP
+    """
+    def _calculate_gp(self, cost_price, sale_price):
+        """
+        Method to return GP as an integer, 
+        rounded to 2 decimal places, 
+        if given cost_price and sale_price.
+        """
+        gp = round((sale_price - cost_price) / sale_price * 100, 2)
+        return f"Current GP(%): {gp}\n"
+
+        
+class RecPriceMixin:
+    """
+    Mixin to calculate recommended price.
+    """
+    def _calculate_rec_price(self, cost_price):
+        """
+        Mixin to calculate recommended sale price,
+        based on Irish standard food GP of 65%,
+        if given cost_price. 
+        """
+        rec_price = round(cost_price / (1 - (65 / 100)), 2)
+        return f"Recommended sale price: €{rec_price}\n"
+
+        
+class ExistingProduct(GrossProfitMixin, RecPriceMixin, Product):
+    """
+    Class for existing products, inheriting from Product 
+    superclass, RecPriceMixin and GrossProductMixin.
+    """
+    def __init__(self, name, cost_price, sale_price):
+        self.sale_price = sale_price
+        Product.__init__(self, name, cost_price)
+        
+    def get_details(self):
+        """
+        Method to return all product details as a string. 
+        Utilises details() method from Product superclass, 
+        as well as methods from GrossProductMixin and RecPriceMixin.
+        """
+        return Product.details(self) + f"Sale Price: €{round(self.sale_price, 2)}\n" + self._calculate_gp(self.cost_price, self.sale_price) + self._calculate_rec_price(self.cost_price)
+
+
+class NewProduct(RecPriceMixin, Product):
+    """
+    Class for new products, inheriting from Product 
+    class and RecPriceMixin
+    """
+    def __init__(self, name, cost_price):
+        Product.__init__(self, name, cost_price)
+        
+    def get_details(self):
+        """
+        Method to return all product details as a string. 
+        Utilises details() method from Product superclass, 
+        as well as _calculate_rec_price() method from RecPriceMixin.
+        """
+        return Product.details(self) + self._calculate_rec_price(self.cost_price)
+        
+
+brownie = ExistingProduct("Brownie", 1.556, 2.754)
+print(brownie.get_details())
+
+banoffie = NewProduct("Banoffie Pie", 2.67)
+print(banoffie.get_details())
+
+
+def main():
+    """
+    Run all program functions.
+    """
+    user_option = main_user_interface()
+    existing_products = get_existing_products()
+    print(existing_products)
+
+
+print("Welcome to Kayleigh's Cakes product analysis!\n")
+main()
