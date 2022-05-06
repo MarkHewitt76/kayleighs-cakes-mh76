@@ -37,22 +37,31 @@ def main_user_interface():
     return option
 
 
-def validate_input(option):
+def validate_input(value):
     """
     Uses a try statement to raise an error if the user's
     input is not a number between 1 and 6.
     """
     try:
-        int(option) in range(1, 6)
-    except ValueError:
-        print("Invalid input! Please enter a number between 1 and 6.\n")
+        if int(value) not in range(1, 7):
+            raise ValueError(f"You entered {value}.")
+    except ValueError as e:
+        print(f"Invalid entry: {e}\nPlease enter a number between 1 and 6.\n")
         return False
 
     return True
 
 
-option = main_user_interface()
+def get_existing_products():
+    """
+    Gets all info from 'current products' worksheet and 
+    assigns it to current_products variable.
+    """
+    current_products = SHEET.worksheet("current products")
+    data = current_products.get_all_values()
+    return data
 
-current_products = SHEET.worksheet("current products")
-data = current_products.get_all_values()
-print(data)
+
+user_option = main_user_interface()
+existing_products = get_existing_products()
+print(existing_products)
