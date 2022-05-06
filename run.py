@@ -134,13 +134,14 @@ class NewProduct(RecPriceMixin, Product):
             self._calculate_rec_price(self.cost_price)
 
 
-def get_existing_products():
+def get_products(worksheet):
     """
-    Gets all info from 'current products' worksheet and
-    assigns it to current_products variable.
+    Gets all info from the requested worksheet,
+    deletes the row of headings and returns the
+    remaining data.
     """
-    current_products = SHEET.worksheet("current products")
-    product_data = current_products.get_all_values()
+    products = SHEET.worksheet(worksheet)
+    product_data = products.get_all_values()
     del product_data[0]
     return product_data
 
@@ -160,7 +161,7 @@ def build_current_product_list(product_data):
     return product_list
 
 
-def show_existing_products(product_list):
+def show_products(product_list):
     """
     Takes the list of product objects and prints it to
     the terminal in a readable format.
@@ -174,9 +175,9 @@ def main():
     Run all program functions.
     """
     user_option = main_user_interface()
-    existing_products = get_existing_products()
+    existing_products = get_products("current products")
     current_product_list = build_current_product_list(existing_products)
-    show_existing_products(current_product_list)
+    show_products(current_product_list)
 
 
 print("Welcome to Kayleigh's Cakes product analysis!\n")
