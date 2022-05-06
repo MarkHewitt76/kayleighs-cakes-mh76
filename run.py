@@ -148,14 +148,29 @@ def get_products(worksheet):
 
 def build_current_product_list(product_data):
     """
-    Takes the spreadsheet data from the relevant
-    'get products' function and adds the data to the
-    product classes. Returns a list of class objects.
+    Takes the spreadsheet data from the get_products()
+    function and adds the data to the ExistingProduct class.
+    Returns a list of class objects.
     """
     product_list = []
     for data in product_data:
         product_list.append(
             ExistingProduct(data[0], float(data[1]), float(data[2]))
+            )
+
+    return product_list
+
+
+def build_new_product_list(product_data):
+    """
+    Takes the spreadsheet data from the get_products()
+    function and adds the data to the NewProduct class.
+    Returns a list of class objects.
+    """
+    product_list = []
+    for data in product_data:
+        product_list.append(
+            NewProduct(data[0], float(data[1]))
             )
 
     return product_list
@@ -174,10 +189,15 @@ def main():
     """
     Run all program functions.
     """
-    user_option = main_user_interface()
-    existing_products = get_products("current products")
-    current_product_list = build_current_product_list(existing_products)
-    show_products(current_product_list)
+    user_option = int(main_user_interface())
+    if user_option == 1:
+        existing_products = get_products("current products")
+        current_product_list = build_current_product_list(existing_products)
+        show_products(current_product_list)
+    elif user_option == 2:
+        new_products = get_products("new products")
+        new_product_list = build_new_product_list(new_products)
+        show_products(new_product_list)
 
 
 print("Welcome to Kayleigh's Cakes product analysis!\n")
