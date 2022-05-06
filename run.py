@@ -28,7 +28,7 @@ def main_user_interface():
         print("6. Exit the program\n")
         option = input("Enter your choice here (1-6):\n")
 
-        if validate_input(option):
+        if validate_input(option, 1, 7):
             print("Input valid!")
             print("Working...\n")
             break
@@ -36,16 +36,19 @@ def main_user_interface():
     return option
 
 
-def validate_input(value):
+def validate_input(value, range_start, range_stop):
     """
     Uses a try statement to raise an error if the user's
     input is not a number between 1 and 6.
     """
     try:
-        if int(value) not in range(1, 7):
+        if int(value) not in range(range_start, range_stop):
             raise ValueError(f"You entered {value}.")
     except ValueError as e:
-        print(f"Invalid entry: {e}\nPlease enter a number between 1 and 6.\n")
+        print(
+            f"Invalid entry: {e}\nPlease enter a number \
+                between {range_start} and {range_stop - 1}.\n"
+            )
         return False
 
     return True
@@ -182,22 +185,30 @@ def show_products(product_list):
     the terminal in a readable format.
     """
     for i in range(0, int(len(product_list))):
-        print(product_list[i].get_details())
+        print(product_list[i].get_details())    
 
 
 def main():
     """
-    Run all program functions.
+    Run all program functions based on user input.
     """
-    user_option = int(main_user_interface())
-    if user_option == 1:
-        existing_products = get_products("current products")
-        current_product_list = build_current_product_list(existing_products)
-        show_products(current_product_list)
-    elif user_option == 2:
-        new_products = get_products("new products")
-        new_product_list = build_new_product_list(new_products)
-        show_products(new_product_list)
+    while True:
+        user_option = (int(main_user_interface()))
+        if user_option == 1:
+            print("Current Products")
+            print("----------------\n")
+            existing_products = get_products("current products")
+            current_product_list = build_current_product_list(
+                                    existing_products)
+            show_products(current_product_list)
+        elif user_option == 2:
+            new_products = get_products("new products")
+            new_product_list = build_new_product_list(new_products)
+            show_products(new_product_list)
+        else:
+            print("Exiting...\n")
+            print("Goodbye!")
+            exit()
 
 
 print("Welcome to Kayleigh's Cakes product analysis!\n")
