@@ -64,7 +64,7 @@ class Product:
         Method to return product details as a string.
         """
         return f"Product: {self.name}\n"\
-            "Cost Price: €{round(self.cost_price, 2)}\n"
+            f"Cost Price: €{self.cost_price:.2f}\n"
 
 
 class GrossProfitMixin:
@@ -78,7 +78,7 @@ class GrossProfitMixin:
         if given cost_price and sale_price.
         """
         gp = round((sale_price - cost_price) / sale_price * 100, 2)
-        return f"Current GP(%): {gp}\n"
+        return f"Current GP: {gp}%\n"
 
 
 class RecPriceMixin:
@@ -111,7 +111,7 @@ class ExistingProduct(GrossProfitMixin, RecPriceMixin, Product):
         as well as methods from GrossProductMixin and RecPriceMixin.
         """
         return Product.details(self) + \
-            f"Sale Price: €{round(self.sale_price, 2)}\n" + \
+            f"Sale Price: €{self.sale_price:.2f}\n" + \
             self._calculate_gp(self.cost_price, self.sale_price) + \
             self._calculate_rec_price(self.cost_price)
 
@@ -134,13 +134,6 @@ class NewProduct(RecPriceMixin, Product):
             self._calculate_rec_price(self.cost_price)
 
 
-brownie = ExistingProduct("Brownie", 1.556, 2.754)
-print(brownie.get_details())
-
-banoffie = NewProduct("Banoffie Pie", 2.67)
-print(banoffie.get_details())
-
-
 def get_existing_products():
     """
     Gets all info from 'current products' worksheet and
@@ -156,9 +149,8 @@ def build_current_product_list(product_data):
     """
     Takes the spreadsheet data from the relevant
     'get products' function and adds the data to the
-    product classes.
+    product classes. Returns a list of class objects.
     """
-    print(product_data[0])
     product_list = []
     for data in product_data:
         product_list.append(
@@ -168,15 +160,23 @@ def build_current_product_list(product_data):
     return product_list
 
 
+def show_existing_products(product_list):
+    """
+    Takes the list of product objects and prints it to
+    the terminal in a readable format.
+    """
+    for i in range(0, int(len(product_list))):
+        print(product_list[i].get_details())
+
+
 def main():
     """
     Run all program functions.
     """
     user_option = main_user_interface()
     existing_products = get_existing_products()
-    print(existing_products)
     current_product_list = build_current_product_list(existing_products)
-    print(current_product_list)
+    show_existing_products(current_product_list)
 
 
 print("Welcome to Kayleigh's Cakes product analysis!\n")
