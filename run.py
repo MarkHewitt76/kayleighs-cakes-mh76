@@ -23,9 +23,9 @@ def main_user_interface():
         print("1. View existing products")
         print("2. View potential new products")
         print("3. View most popular products\n   (based on customer survey)")
-        print("4. Add products to 'new menu short list' worksheet")
+        print("4. Add product to 'new menu short list' worksheet")
         print("5. Exit the program\n")
-        option = input("Enter your choice here (1-6):\n")
+        option = input("Enter your choice here (1-5):\n")
 
         if validate_input(option, 1, 6):
             print("Input valid!")
@@ -38,7 +38,7 @@ def main_user_interface():
 def validate_input(value, range_start, range_stop):
     """
     Uses a try statement to raise an error if the user's
-    input is not a number between 1 and 6.
+    input is not a number within range.
     """
     try:
         if int(value) not in range(range_start, range_stop):
@@ -266,6 +266,45 @@ def show_most_popular(average_ratings):
         print(f"Product: {key}\nRating: {value}\n")
 
 
+def get_all_products():
+    """
+    Builds and returns a list of all products class objects.
+    """
+    current_products = get_product_data("current products")
+    all_products = build_current_product_list(current_products)
+    new_products = get_product_data("new products")
+    new_list = build_new_product_list(new_products)
+    all_products.extend(new_list)
+
+    return all_products
+
+
+def add_to_shortlist(product_list):
+    """
+    Iterates through the list of all product class objects,
+    displaying each product's details to the user and writing
+    its name and recommended price to the menu short list worksheet,
+    if so instructed.
+    """
+    menu_shortlist = SHEET.worksheet("menu shortlist")
+    while True:
+        print("Choose a product to add to the menu short list...\n")
+        for i in range(0, int(len(product_list))):
+            print(f"{i + 1}. {product_list[i].name}\n")
+
+        option = input("Enter a number from 1 to 11:\n")
+
+        if validate_input(option, 1, 12):
+            sale_price = round(
+                product_list[int(option) - 1].cost_price / (1 - (65 / 100)), 2
+                )
+            data = [product_list[int(option) - 1].name, str(f"€{sale_price}")]
+            print("Updating worksheet...\n")
+            menu_shortlist.append_row(data)
+            print("...Done!\n")
+            break
+
+
 def main():
     """
     Run all program functions or exit the program,
@@ -292,6 +331,10 @@ def main():
             customer_ratings = get_customer_ratings()
             average_ratings = calculate_average_ratings(customer_ratings)
             show_most_popular(average_ratings)
+            input("Press Enter to continue\n")
+        elif user_option == 4:
+            all_products = get_all_products()
+            add_to_shortlist(all_products)
             input("Press Enter to continue\n")
         else:
             print("Exiting...\n")
