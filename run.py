@@ -16,19 +16,18 @@ SHEET = GSPREAD_CLIENT.open('kayleighs-cakes-mh76')
 def main_user_interface():
     """
     A list of options presented to the user.\
-    Number input (1-6) determines the action taken.
+    Number input (1-5) determines the action taken.
     """
     while True:
         print("What would you like to do?\n")
         print("1. View existing products")
         print("2. View potential new products")
-        print("3. View all products")
-        print("4. View most popular products\n   (based on customer survey)")
-        print("5. Add products to 'new menu short list' worksheet")
-        print("6. Exit the program\n")
+        print("3. View most popular products\n   (based on customer survey)")
+        print("4. Add products to 'new menu short list' worksheet")
+        print("5. Exit the program\n")
         option = input("Enter your choice here (1-6):\n")
 
-        if validate_input(option, 1, 7):
+        if validate_input(option, 1, 6):
             print("Input valid!")
             print("Working...\n")
             break
@@ -46,8 +45,7 @@ def validate_input(value, range_start, range_stop):
             raise ValueError(f"You entered {value}.")
     except ValueError as e:
         print(
-            f"Invalid entry: {e}\nPlease enter a number \
-                between {range_start} and {range_stop - 1}.\n"
+            f"Invalid: {e}\nPlease enter {range_start} to {range_stop - 1}.\n"
             )
         return False
 
@@ -137,7 +135,7 @@ class NewProduct(RecPriceMixin, Product):
             self._calculate_rec_price(self.cost_price)
 
 
-def get_products(worksheet):
+def get_product_data(worksheet):
     """
     Gets all info from the requested worksheet,
     deletes the row of headings and returns the
@@ -151,7 +149,7 @@ def get_products(worksheet):
 
 def build_current_product_list(product_data):
     """
-    Takes the spreadsheet data from the get_products()
+    Takes the spreadsheet data from the get_product_data()
     function and adds the data to the ExistingProduct class.
     Returns a list of class objects.
     """
@@ -166,7 +164,7 @@ def build_current_product_list(product_data):
 
 def build_new_product_list(product_data):
     """
-    Takes the spreadsheet data from the get_products()
+    Takes the spreadsheet data from the get_product_data()
     function and adds the data to the NewProduct class.
     Returns a list of class objects.
     """
@@ -185,26 +183,53 @@ def show_products(product_list):
     the terminal in a readable format.
     """
     for i in range(0, int(len(product_list))):
-        print(product_list[i].get_details())    
+        print(product_list[i].get_details())
+
+
+def get_customer_ratings():
+    """
+    Gets the customer survey data from Google sheets
+    and returns a tuple containing data from each worksheet
+    """
+    current_product_ratings = SHEET.worksheet("ratings current")
+    current_ratings = []
+    for ind in range(1, 6):
+        ratings = current_product_ratings.col_values(ind)
+        current_ratings.append(ratings)
+
+    new_product_ratings = SHEET.worksheet("ratings new")
+    new_ratings = []
+    for ind in range(1, 6):
+        ratings = new_product_ratings.col_values(ind)
+        new_ratings.append(ratings)
+    
+    return current_ratings, new_ratings
 
 
 def main():
     """
-    Run all program functions based on user input.
+    Run all program functions or exit the program,
+    based on user input.
     """
     while True:
         user_option = (int(main_user_interface()))
         if user_option == 1:
             print("Current Products")
             print("----------------\n")
-            existing_products = get_products("current products")
+            existing_products = get_product_data("current products")
             current_product_list = build_current_product_list(
                                     existing_products)
             show_products(current_product_list)
+            input("Press Enter to continue.")
         elif user_option == 2:
-            new_products = get_products("new products")
+            print("Potential New Products")
+            print("----------------------\n")
+            new_products = get_product_data("new products")
             new_product_list = build_new_product_list(new_products)
             show_products(new_product_list)
+            input("Press Enter to continue.")
+        elif user_option == 3:
+            get_customer_ratings()
         else:
             print("Exiting...\n")
             print("Goodbye!")
