@@ -189,7 +189,7 @@ def show_products(product_list):
 def get_customer_ratings():
     """
     Gets the customer survey data from Google sheets
-    and returns a tuple containing data from each worksheet
+    and returns a tuple containing data from each worksheet.
     """
     current_product_ratings = SHEET.worksheet("ratings current")
     current_ratings = []
@@ -199,11 +199,71 @@ def get_customer_ratings():
 
     new_product_ratings = SHEET.worksheet("ratings new")
     new_ratings = []
-    for ind in range(1, 6):
+    for ind in range(1, 7):
         ratings = new_product_ratings.col_values(ind)
         new_ratings.append(ratings)
-    
+
     return current_ratings, new_ratings
+
+
+def calculate_average_ratings(customer_ratings):
+    """
+    Calculates each product's average rating from the
+    returned survey data and returns a tuple of dictionaries
+    containing 'product: rating' pairs.
+    """
+    current_ratings, new_ratings = customer_ratings
+
+    current_average_ratings = {}
+    for product in current_ratings:
+        int_list = [int(num) for num in product[1:]]
+        average = round(sum(int_list) / len(int_list), 2)
+        current_average_ratings[product[0]] = average
+
+    new_average_ratings = {}
+    for product in new_ratings:
+        int_list = [int(num) for num in product[1:]]
+        average = round(sum(int_list) / len(int_list), 2)
+        new_average_ratings[product[0]] = average
+
+    return current_average_ratings, new_average_ratings
+
+
+def show_most_popular(average_ratings):
+    """
+    Unpacks the 'average ratings' tuple into its respective
+    dictionaries, sorts them by their values and prints their
+    key: value pairs to the console in descending order.
+    I found the handy(ish) method for sorting the dictionaries
+    here: https://stackabuse.com/how-to-sort-dictionary-by-value-in-python/
+    """
+    current_average_ratings, new_average_ratings = average_ratings
+
+    sorted_current_averages = {}
+    sorted_current_keys = sorted(
+        current_average_ratings, key=current_average_ratings.get, reverse=True
+        )
+    for j in sorted_current_keys:
+        sorted_current_averages[j] = current_average_ratings[j]
+
+    sorted_new_averages = {}
+    sorted_new_keys = sorted(
+        new_average_ratings, key=new_average_ratings.get, reverse=True
+        )
+    for k in sorted_new_keys:
+        sorted_new_averages[k] = new_average_ratings[k]
+
+    print("Existing products: average ratings out of 5")
+    print("-------------------------------------------\n")
+    for key, value in sorted_current_averages.items():
+        print(f"Product: {key}\nRating: {value}\n")
+
+    input("Press Enter to continue\n")
+
+    print("Potential new products: average ratings out of 5")
+    print("------------------------------------------------\n")
+    for key, value in sorted_new_averages.items():
+        print(f"Product: {key}\nRating: {value}\n")
 
 
 def main():
@@ -220,16 +280,19 @@ def main():
             current_product_list = build_current_product_list(
                                     existing_products)
             show_products(current_product_list)
-            input("Press Enter to continue.")
+            input("Press Enter to continue.\n")
         elif user_option == 2:
             print("Potential New Products")
             print("----------------------\n")
             new_products = get_product_data("new products")
             new_product_list = build_new_product_list(new_products)
             show_products(new_product_list)
-            input("Press Enter to continue.")
+            input("Press Enter to continue.\n")
         elif user_option == 3:
-            get_customer_ratings()
+            customer_ratings = get_customer_ratings()
+            average_ratings = calculate_average_ratings(customer_ratings)
+            show_most_popular(average_ratings)
+            input("Press Enter to continue\n")
         else:
             print("Exiting...\n")
             print("Goodbye!")
